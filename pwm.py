@@ -1,11 +1,14 @@
 import Tkinter as Tk
 import tkFileDialog
 import os, sys, time
-import Image, ImageDraw, ImageFont, ImageTk
+try:
+    from PIL import Image, ImageDraw, ImageFont, ImageTk, ImageEnhance
+except:
+    import Image, ImageDraw, ImageFont, ImageTk, ImageEnhance
 
-TEXT = 'YOUR TEXT HERE'
+TEXT = 'marketing-research.ru'
 
-FONT_SIZE = 90
+FONT_SIZE = 25
 
 
 
@@ -102,7 +105,7 @@ class MyApp:
         fn, ft = os.path.splitext(filename)
         if ft.upper() in [".JPG", ".JPEG", ".PNG"] and \
                not (fn.upper().endswith("-MARKED")):
-            return fn + "-marked" + ".JPEG"
+            return fn + "-marked" + ".PNG"
         else:
             return None
 
@@ -110,11 +113,11 @@ class MyApp:
         full_original_filename = os.path.join(dirpath, original_filename)
         full_new_filename = os.path.join(dirpath, new_filename)
         font=ImageFont.truetype("tahoma.ttf", FONT_SIZE)
-	    text = TEXT
+        text = TEXT
         im = Image.open(full_original_filename)
         im0 = Imprint(im, text, font=font, opacity=0.6, 
-             color=(255,255,255))
-        im0.save(full_new_filename, "JPEG")
+             color=(0,0,0))
+        im0.save(full_new_filename)
         return text
 
 def GetFileDate(file):
@@ -140,7 +143,6 @@ def ReduceOpacity(im, opacity):
     Taken from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/362879
     """
 
-    import ImageEnhance
     assert opacity >= 0 and opacity <= 1
     if im.mode != 'RGBA':
         im = im.convert('RGBA')
