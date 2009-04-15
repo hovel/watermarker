@@ -6,15 +6,13 @@ try:
 except:
     import Image, ImageDraw, ImageFont, ImageTk, ImageEnhance
 
-TEXT = 'marketing-research.ru'
 
-FONT_SIZE = 25
-
-
-
-class MyApp:
+class pwm:
     """Begin a Tkinter-based application"""
-    
+    # ------- INLINE CONFIG (DEFAULT VALUES)-------
+    TEXT = 'marketing-research.ru'
+    FONT_SIZE = 25
+    # ------------------
     def __init__(self, root):
         """initializer for Tkinter-based application"""
         self.root=root
@@ -38,14 +36,13 @@ class MyApp:
         OptionsFrame = Tk.Frame(self.root)
         OptionsFrame.pack()
         self.EXIFvar = Tk.IntVar()
-        #self.EXIFvar.set(1)
+        self.EXIFvar.set(1)
         self.EXIFCheckbox = Tk.Checkbutton(
             OptionsFrame,
             text="Preserve EXIF (requires JHead)",
             variable = self.EXIFvar)
         self.EXIFCheckbox.pack(side="top")
-        self.Progressvar = Tk.IntVar()
-        
+        self.Progressvar = Tk.IntVar()        
         self.ProgressCheckbox = Tk.Checkbutton(
             OptionsFrame,
             text="Show progress",
@@ -75,15 +72,18 @@ class MyApp:
 
     def process_files(self, junk, dirpath, namelist):
         for filename in namelist:
-            stamped_filename = self.getstampedfilename(filename)
-            if stamped_filename is not None:
-                if os.path.isfile(os.path.join(dirpath,stamped_filename)):
-                    print "FILE EXISTS, SKIPPING:", stamped_filename
+            marked_filename = self.getmarkedfilename(filename)
+            if marked_filename is not None:
+                if os.path.isfile(os.path.join(dirpath,marked_filename)):
+                    print "FILE EXISTS, SKIPPING:", marked_filename
                 else:
                     self.updatestatus(dirpath, filename)
-                    datetext = self.timestamp(dirpath, filename, 
-                        stamped_filename)
-                    print "FILE IMPRINTED:", stamped_filename, datetext
+                    try:
+                        watermark_fix_size(dirpath, filename, marked_filename, self.TEXT, self.FONT_SIZE)
+                        print('Watermarking successful: %s' % filename )
+                    except:
+                        raise
+                        print('Something is wrong while watermarking: %s' % filename )
                     
     def updatestatus(self,dirpath,filename):
         im=Image.open(os.path.join(dirpath, filename))
@@ -99,26 +99,35 @@ class MyApp:
         self.FilenameLabel.pack()
         self.StatusFrame.pack()
         self.root.update()
-
-    
-    def getstampedfilename(self, filename):
+    def getmarkedfilename(self, filename):
         fn, ft = os.path.splitext(filename)
         if ft.upper() in [".JPG", ".JPEG", ".PNG"] and \
                not (fn.upper().endswith("-MARKED")):
-            return fn + "-marked" + ".PNG"
+            return fn + "-marked" + ft
         else:
             return None
 
-    def timestamp(self, dirpath, original_filename, new_filename):
-        full_original_filename = os.path.join(dirpath, original_filename)
-        full_new_filename = os.path.join(dirpath, new_filename)
-        font=ImageFont.truetype("tahoma.ttf", FONT_SIZE)
-        text = TEXT
-        im = Image.open(full_original_filename)
-        im0 = Imprint(im, text, font=font, opacity=0.6, 
-             color=(0,0,0))
-        im0.save(full_new_filename)
-        return text
+def watermark_fix_size(dirpath, original_filename, new_filename, text, font_size=25, font_name='tahoma.ttf', color=(0,0,0)):
+    full_original_filename = os.path.join(dirpath, original_filename)
+    full_new_filename = os.path.join(dirpath, new_filename)
+    im = Image.open(full_original_filename)
+    im0 = watermarkit(im, text, font_size, font_name)
+    im0.save(full_new_filename)
+    return text
+
+def watermark_dyn_size(dirpath, original_filename, new_filename, text, percent=5, font_name='tahoma.ttf', color=(0,0,0)):
+    full_original_filename = os.path.join(dirpath, original_filename)
+    full_new_filename = os.path.join(dirpath, new_filename)
+    im = Image.open(full_original_filename)
+    im0 = watermarkit(im, text)
+    im0.save(full_new_filename)
+    return text
+
+    
+def watermarkit(image, text, font_size=90, font_name = 'tahoma.ttf', color=(0,0,0)):
+    font=ImageFont.truetype(font_name, font_size)
+    im0 = Imprint(image, text, font=font, opacity=0.6, color=color)
+    return im0
 
 def GetFileDate(file):
     """
@@ -170,6 +179,6 @@ def Imprint(im, inputtext, font=None, color=None, opacity=.6, margin=(30,30)):
         
             
 root = Tk.Tk()
-myapp = MyApp(root)
+myapp = pwm(root)
 root.mainloop()
 
