@@ -12,6 +12,7 @@ class pwm:
     # ------- INLINE CONFIG (DEFAULT VALUES)-------
     TEXT = 'marketing-research.ru'
     FONT_SIZE = 25
+    FONT_SCALE = 0.05
     # ------------------
     def __init__(self, root):
         """initializer for Tkinter-based application"""
@@ -79,7 +80,7 @@ class pwm:
                 else:
                     self.updatestatus(dirpath, filename)
                     try:
-                        watermark_fix_size(dirpath, filename, marked_filename, self.TEXT, self.FONT_SIZE)
+                        watermark_dyn_size(dirpath, filename, marked_filename, self.TEXT, self.FONT_SCALE)
                         print('Watermarking successful: %s' % filename )
                     except:
                         raise
@@ -115,11 +116,13 @@ def watermark_fix_size(dirpath, original_filename, new_filename, text, font_size
     im0.save(full_new_filename)
     return text
 
-def watermark_dyn_size(dirpath, original_filename, new_filename, text, percent=5, font_name='tahoma.ttf', color=(0,0,0)):
+def watermark_dyn_size(dirpath, original_filename, new_filename, text, font_scale=0.05, font_name='tahoma.ttf', color=(0,0,0)):
     full_original_filename = os.path.join(dirpath, original_filename)
     full_new_filename = os.path.join(dirpath, new_filename)
     im = Image.open(full_original_filename)
-    im0 = watermarkit(im, text)
+    width, height = im.size
+    font_size = int(font_scale*height)
+    im0 = watermarkit(im, text, font_size, font_name)
     im0.save(full_new_filename)
     return text
 
