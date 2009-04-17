@@ -1,4 +1,7 @@
-import Tkinter as Tk
+#!/usr/bin/env python
+# vim:fileencoding=utf-8
+# ---------------------------------------
+from Tkinter import *
 import tkFileDialog
 import os, sys, time
 try:
@@ -7,57 +10,47 @@ except:
     import Image, ImageDraw, ImageFont, ImageTk, ImageEnhance
 
 
-class pwm:
+class pwm(Frame):
     """Begin a Tkinter-based application"""
     # ------- INLINE CONFIG (DEFAULT VALUES)-------
     TEXT = 'marketing-research.ru'
     FONT_SIZE = 25
     FONT_SCALE = 0.05
     # ------------------
-    def __init__(self, root):
+    def __init__(self, master=None):
         """initializer for Tkinter-based application"""
-        self.root=root
-        self.root.title("Picture WaterMarker")
-        NoticeFrame = Tk.Frame(self.root)
-        NoticeFrame.pack()
+        Frame.__init__(self, master)
+        self.grid()
+        self.createWidgets()
+        
+    def createWidgets(self):
+        self.master.title = "Picture WaterMarker"
+        # Header Text
         headertext = u"""
         Picture Watermarker
         \U000000A9 2009 Zhukov Pavel
         """
-        Tk.Label(NoticeFrame,text=headertext).pack()
-        ButtonFrame = Tk.Frame(self.root)
-        ButtonFrame.pack()       
-        SelButton = Tk.Button(ButtonFrame, 
-            text="Select Directory", command=self.select)
-        SelButton.pack(side="left")
-        QuitButton = Tk.Button(ButtonFrame, text="Quit", 
-            command=self.quit)
-        QuitButton.pack(side="left")
-
-        OptionsFrame = Tk.Frame(self.root)
-        OptionsFrame.pack()
-        self.EXIFvar = Tk.IntVar()
-        self.EXIFvar.set(1)
-        self.EXIFCheckbox = Tk.Checkbutton(
-            OptionsFrame,
-            text="Preserve EXIF (requires JHead)",
-            variable = self.EXIFvar)
-        self.EXIFCheckbox.pack(side="top")
-        self.Progressvar = Tk.IntVar()        
-        self.ProgressCheckbox = Tk.Checkbutton(
-            OptionsFrame,
-            text="Show progress",
-            variable = self.Progressvar)
-        self.ProgressCheckbox.pack(side="left")
-               
-        self.StatusFrame = Tk.Frame(self.root)
-        self.StatusFrame.pack()
-        self.ImageLabel = Tk.Label(self.StatusFrame)
-        self.ImageLabel.pack()
-        self.FilenameLabel = Tk.Label(self.StatusFrame)
-        self.FilenameLabel.pack()
-        self.ProgressCheckbox.toggle()
-
+        Header=Label(self,text=headertext,)
+        Header.grid(row=0, column=0, columnspan=2)
+        #Text
+        Label(self, text = "Text:").grid(row=1, column=0, sticky=N+E+S+W)
+        self.Text = Entry(self, text = "Text" )
+        self.Text.grid(row=1, column=1, sticky=N+E+S+W, pady=5)
+        self.Text.insert(0,self.TEXT)
+        #Buttons
+        self.Doit = Button(self, text=u"Select Directory (Watermark)", command=self.select)
+        self.Doit.grid(row=4, column=0, columnspan=2, sticky=N+E+S+W)
+        self.Save =Button(self, text="Save settings", command=self.save)
+        self.Save.grid(row=5, column=0, sticky=N+E+S+W)
+        self.Quit = Button (self, text="Quit", command=self.quit )
+        self.Quit.grid(row=5, column=1, sticky=N+E+S+W)
+        #Preview
+        self.ImageLabel = Label(self)
+        self.ImageLabel.grid(row=6, column=0,columnspan=2, sticky=N+E+S+W)
+        self.FilenameLabel = Label(self)
+        self.FilenameLabel.grid(row=7, column=0,columnspan=2, sticky=N+E+S+W)
+    def save(self):
+        pass
     def select(self):
         dirname = tkFileDialog.askdirectory()
         if dirname != '':
@@ -80,7 +73,7 @@ class pwm:
                 else:
                     self.updatestatus(dirpath, filename)
                     try:
-                        watermark_dyn_size(dirpath, filename, marked_filename, self.TEXT, self.FONT_SCALE)
+                        watermark_dyn_size(dirpath, filename, marked_filename, self.text.get(), self.FONT_SCALE)
                         print('Watermarking successful: %s' % filename )
                     except:
                         raise
@@ -95,11 +88,11 @@ class pwm:
         self.Tkimage = ImageTk.PhotoImage(im)
         print "created"
         self.ImageLabel.config(image=self.Tkimage)
-        self.ImageLabel.pack()
+        #self.ImageLabel.pack()
         self.FilenameLabel.config(text=filename)
-        self.FilenameLabel.pack()
-        self.StatusFrame.pack()
-        self.root.update()
+        #self.FilenameLabel.pack()
+        #self.pack()
+        self.master.update()
     def getmarkedfilename(self, filename):
         fn, ft = os.path.splitext(filename)
         if ft.upper() in [".JPG", ".JPEG", ".PNG"] and \
@@ -181,7 +174,6 @@ def Imprint(im, inputtext, font=None, color=None, opacity=.6, margin=(30,30)):
     return Image.composite(textlayer, im, textlayer)
         
             
-root = Tk.Tk()
-myapp = pwm(root)
-root.mainloop()
+watermarker = pwm()
+watermarker.mainloop()
 
