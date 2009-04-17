@@ -2,6 +2,7 @@
 # vim:fileencoding=utf-8
 # ---------------------------------------
 from Tkinter import *
+import tkMessageBox
 import tkFileDialog
 import os, sys, time
 try:
@@ -13,9 +14,9 @@ except:
 class pwm(Frame):
     """Begin a Tkinter-based application"""
     # ------- INLINE CONFIG (DEFAULT VALUES)-------
-    TEXT = 'marketing-research.ru'
-    FONT_SIZE = 25
-    FONT_SCALE = 0.05
+    DTEXT = 'marketing-research.ru'
+    DFONT_SIZE = 25
+    DFONT_SCALE = '5%'
     # ------------------
     def __init__(self, master=None):
         """initializer for Tkinter-based application"""
@@ -24,7 +25,7 @@ class pwm(Frame):
         self.createWidgets()
         
     def createWidgets(self):
-        self.master.title = "Picture WaterMarker"
+        self.title = "Picture WaterMarker"
         # Header Text
         headertext = u"""
         Picture Watermarker
@@ -34,9 +35,14 @@ class pwm(Frame):
         Header.grid(row=0, column=0, columnspan=2)
         #Text
         Label(self, text = "Text:").grid(row=1, column=0, sticky=N+E+S+W)
-        self.Text = Entry(self, text = "Text" )
+        self.Text = Entry(self)
         self.Text.grid(row=1, column=1, sticky=N+E+S+W, pady=5)
-        self.Text.insert(0,self.TEXT)
+        self.Text.insert(0,self.DTEXT)
+        #Font Size
+        Label(self, text = '% of image\n or font size:').grid(row=2, column=0, sticky=N+E+S+W)
+        self.Size = Entry(self)
+        self.Size.grid(row=2, column=1, sticky=N+E+S+W, pady=10)
+        self.Size.insert(0,self.DFONT_SCALE)
         #Buttons
         self.Doit = Button(self, text=u"Select Directory (Watermark)", command=self.select)
         self.Doit.grid(row=4, column=0, columnspan=2, sticky=N+E+S+W)
@@ -52,12 +58,29 @@ class pwm(Frame):
     def save(self):
         pass
     def select(self):
+        #Prepare:
+        sfont = self.Size.get()
+        if '%' in sfont:
+            self.Type = 'scale'
+            try:
+                self.FONT_SCALE = int(sfont[:-1])/100.
+            except:
+                tkMessageBox.showerror('Error','Wrong font scale')
+                return 
+        else:
+            self.Type = 'size'
+            try:
+                self.FONT_SIZE = int(sfont)
+            except:
+                tkMessageBox.showerror('Error','Wrong font size')
+                return 
+        
         dirname = tkFileDialog.askdirectory()
         if dirname != '':
             os.path.walk(dirname, self.process_files, None)
-            print "PROCESSING COMPLETED.  SELECT MORE FILES OR QUIT."
+            tkMessageBox.showinfo('Info', 'PROCESSING COMPLETED.  SELECT MORE FILES OR QUIT.')
         else:
-            print "NO DIRECTORY SELECTED."
+            tkMessageBox.showerror('Error',"NO DIRECTORY SELECTED.")
         return
     
     def quit(self):
@@ -73,7 +96,10 @@ class pwm(Frame):
                 else:
                     self.updatestatus(dirpath, filename)
                     try:
-                        watermark_dyn_size(dirpath, filename, marked_filename, self.text.get(), self.FONT_SCALE)
+                        if self.Type == 'scale':
+                            watermark_dyn_size(dirpath, filename, marked_filename, self.Text.get(), self.FONT_SCALE)
+                        else:
+                            watermark_fix_size(dirpath, filename, marked_filename, self.Text.get(), self.FONT_SIZE)
                         print('Watermarking successful: %s' % filename )
                     except:
                         raise
@@ -147,7 +173,6 @@ def ReduceOpacity(im, opacity):
     Returns an image with reduced opacity.
     Taken from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/362879
     """
-
     assert opacity >= 0 and opacity <= 1
     if im.mode != 'RGBA':
         im = im.convert('RGBA')
@@ -158,7 +183,7 @@ def ReduceOpacity(im, opacity):
     im.putalpha(alpha)
     return im
 
-def Imprint(im, inputtext, font=None, color=None, opacity=.6, margin=(30,30)):
+def Imprint(im, inputtext, font=None, color=None, opacity=0.6, margin=(30,30)):
     """
     imprints a PIL image with the indicated text in lower-right corner
     """
@@ -173,7 +198,7 @@ def Imprint(im, inputtext, font=None, color=None, opacity=.6, margin=(30,30)):
         textlayer = ReduceOpacity(textlayer,opacity)
     return Image.composite(textlayer, im, textlayer)
         
-            
-watermarker = pwm()
-watermarker.mainloop()
+if __name__ == '__main__':
+    watermarker = pwm()
+    watermarker.mainloop()
 
