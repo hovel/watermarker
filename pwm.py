@@ -5,6 +5,7 @@ from Tkinter import *
 import tkMessageBox
 import tkFileDialog
 import os, sys, time
+import pyexiv2
 try:
     from PIL import Image, ImageDraw, ImageFont, ImageTk, ImageEnhance
 except:
@@ -130,22 +131,52 @@ class pwm(Frame):
 def watermark_fix_size(dirpath, original_filename, new_filename, text, font_size=25, font_name='tahoma.ttf', color=(0,0,0)):
     full_original_filename = os.path.join(dirpath, original_filename)
     full_new_filename = os.path.join(dirpath, new_filename)
+    e = jpeg.getExif(open(full_original_filename,'rb'))
     im = Image.open(full_original_filename)
     im0 = watermarkit(im, text, font_size, font_name)
     im0.save(full_new_filename)
+    jpeg.setExif(e, open(full_new_filename,'wb'))
     return text
 
 def watermark_dyn_size(dirpath, original_filename, new_filename, text, font_scale=0.05, font_name='tahoma.ttf', color=(0,0,0)):
     full_original_filename = os.path.join(dirpath, original_filename)
     full_new_filename = os.path.join(dirpath, new_filename)
+    
     im = Image.open(full_original_filename)
     width, height = im.size
     font_size = int(font_scale*height)
     im0 = watermarkit(im, text, font_size, font_name)
     im0.save(full_new_filename)
+    try:
+        im = pyexiv2.Image(full_original_filename)
+        im.readMetadata()
+        im2 = pyexiv2.Image(full_new_filename)
+        im2.readMetadata()
+        copyMetadataTo(im,im2)
+        im2.writeMetadata()
+        #im2 = pexif.JpegFile.fromFile(full_new_filename)
+        #im2._segments.insert(0, e1)
+        #im2.writeFile('test.jpeg')
+    except:
+        raise
     return text
 
-    
+def copyMetadataTo(srcImage, destImage):
+    for key in srcImage.exifKeys():
+        try:
+            if ('Photo' in key) or ('Image' in key):
+                print(key)
+                destImage[key] = srcImage[key]
+            else:
+                print('no: %s' % key)
+        except:
+            print('error')
+    for key in srcImage.iptcKeys():
+        try:
+            destImage[key] = srcImage[key]
+        except:
+            pass
+
 def watermarkit(image, text, font_size=90, font_name = 'tahoma.ttf', color=(0,0,0)):
     font=ImageFont.truetype(font_name, font_size)
     im0 = Imprint(image, text, font=font, opacity=0.6, color=color)
@@ -157,10 +188,10 @@ def GetFileDate(file):
     For JPEG files, it will use the EXIF data, if available
     """
     try:
-        import EXIF
+        import EXIFL
         # EXIF.py from http://home.cfl.rr.com/genecash/digital_camera.html
         f = open(file, "rb")
-        tags = EXIF.process_file(f)
+        tags = EXIFL.process_file(f)
         f.close()
         return str(tags['Image DateTime'])
     except (KeyError, ImportError):
