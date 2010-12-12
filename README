@@ -27,13 +27,16 @@ sorl-thumbnail integration
 --------------------------
 
 Add to your settings::
+
  THUMBNAIL_ENGINE = 'watermarker.sorl_engine.WatermarkEngine'
  WATERMARK_OPTIONS = {'font_scale': 0.05, 'font_path': PATH_TO_FONT} # Any other options from watermark function
  WATERMARK_MIN_SIZE = 50 #Minimum image size (max(height, width)) to add watermark
 
 You can add::
- WATERMARK_FORCE = u'www.myknight.ru' # Add watermark to all images except less than WATERMARK_MIN_SIZE
+
+ WATERMARK_FORCE = u'watermark text' # Add watermark to all images except less than WATERMARK_MIN_SIZE
 
 or add watermark option to thumbnail tag::
+
  thumbnail image "1000x1000" watermark="my watermark"
 
