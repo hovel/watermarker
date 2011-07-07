@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
         name='watermarker',
-        version='1.0',
+        version='1.1',
         packages=['watermarker'],
         install_requires=[
             'pil',

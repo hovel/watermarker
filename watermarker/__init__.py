@@ -4,9 +4,9 @@
 __author__ = 'zeus'
 
 try:
-    from PIL import Image, ImageDraw, ImageFont, ImageTk, ImageEnhance
+    from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 except:
-    import Image, ImageDraw, ImageFont, ImageTk, ImageEnhance
+    import Image, ImageDraw, ImageFont, ImageEnhance
 
 class ImpropertlyConfigured(Exception):
     pass
@@ -44,12 +44,12 @@ def Imprint(im, inputtext, font=None, color=None, opacity=0.6, margin=(30,30)):
     return Image.composite(textlayer, im, textlayer)
 
 def watermark(image, text, font_path, font_scale=None, font_size=None, color=(0,0,0), opacity=0.6, margin=(30, 30)):
-    '''
+    """
     image - PIL Image instance
     text - text to add over image
     font_path - font that will be used
     font_scale - font size will be set as percent of image height
-    '''
+    """
     if font_scale and font_size:
         raise ImpropertlyConfigured("You should provide only font_scale or font_size option, but not both")
     elif font_scale:
