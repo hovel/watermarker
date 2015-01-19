@@ -5,9 +5,6 @@ setup(
         name='watermarker',
         version='1.1',
         packages=['watermarker'],
-        install_requires=[
-            'pil',
-        ],
         author='Pavel Zhukov',
         author_email='gelios@gmail.com',
         description='Library for add text watermarks to images using PIL, support sorl-thumbnail integration',
